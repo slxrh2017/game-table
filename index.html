@@ -102,8 +102,10 @@ function startPacket(){
   const total=active.length*100+120;
   state.packet={total,remaining:total,amounts:{},collected:{},started:true};
   active.forEach(p=>state.packet.collected[p.name]=false);
-  msg('<div class="packet" id="packetCard"><div class="pt">🧧 <b>Red Packet</b></div><div class="pb">Tap to collect and view live collection</div></div>');
-  $('packetCard').onclick=()=>openPacket();
+  msg('<div class="packet"><div class="pt">🧧 <b>Red Packet</b></div><div class="pb">Tap to collect and view live collection</div></div>');
+  const packetMsg = feed.lastElementChild;
+  const packetCard = packetMsg && packetMsg.querySelector('.packet');
+  if(packetCard) packetCard.onclick=()=>openPacket();
   setPhase('PACKET',45);
   scheduleBotCollections(active.filter(p=>p.name!=='You'));
 }

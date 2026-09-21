@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Telegram Game V1 — Game Room Test Console</title>
+<style>
+:root{--bg:#0B0C0F;--s:#15171B;--s2:#1D1F24;--g:#D6A63A;--g2:#F4C95D;--r:#8E1018;--t:#F4F1E8;--m:#A9A9AE}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -10%,#4d080d55,transparent 35%),var(--bg);color:var(--t);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.shell{min-height:100dvh;max-width:720px;margin:auto;background:#0b0c0f;display:flex;flex-direction:column}.top{height:58px;display:grid;grid-template-columns:56px 1fr 56px;align-items:center;padding:0 10px;background:#15171bf5;border-bottom:1px solid #d6a63a25;position:sticky;top:0;z-index:5}.top button{border:0;background:none;color:var(--t);font-size:22px}.title{text-align:center;font-weight:800;letter-spacing:.12em;font-size:13px}
+.status{margin:10px 12px 0;padding:12px 14px;border:1px solid #d6a63a59;border-radius:14px;background:linear-gradient(135deg,#1d1f24,#15171b);display:flex;justify-content:space-between;gap:12px;min-height:54px}.status-label{font-weight:850;letter-spacing:.07em;font-size:12px}.status-sub{font-size:11px;color:var(--m);margin-top:4px}.timer{color:var(--g2);font-weight:900;font-size:17px;white-space:nowrap}
+.feed{flex:1;overflow:auto;padding:14px 12px 105px}.msg{display:flex;gap:9px;margin-bottom:12px}.avatar{width:31px;height:31px;flex:0 0 31px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#272a30,#17191d);border:1px solid #343840;color:#90949c}.body{min-width:0;max-width:calc(100% - 40px)}.name{font-size:11px;color:#96989e;margin:0 0 4px 2px}.bubble{display:inline-block;max-width:100%;padding:9px 11px;border-radius:13px;background:#181a1f;border:1px solid #2b2e35;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.42;font-size:14px}.stamp{font-size:9px;color:#6f727a;margin:4px 0 0 3px}.system .avatar{background:#4b3a1d;border-color:#f4c95d61;color:var(--g2);font-weight:900}.system .name{color:var(--g2);font-weight:800}.system .bubble{background:linear-gradient(145deg,#322919,#181714);border-color:#d6a63a80}
+.composer-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(720px,100%);padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#0b0c0ff5 30%);z-index:6}.composer{display:flex;gap:8px;background:var(--s);border:1px solid #39342a;border-radius:16px;padding:7px}.composer input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--t);padding:9px}.send{width:46px;border:0;border-radius:12px;background:linear-gradient(#f4c95d,#d6a63a);font-weight:900}.panel{position:fixed;right:14px;bottom:92px;width:min(390px,calc(100% - 28px));background:#101216;border:1px solid #343840;border-radius:16px;padding:12px;display:none;z-index:20;box-shadow:0 18px 60px #0008}.panel.open{display:block}.panel h3{margin:0 0 10px;font-size:13px}.field{margin:8px 0}.field label{display:block;font-size:10px;color:var(--m);margin-bottom:4px}.field input{width:100%;padding:9px;border:1px solid #363942;border-radius:9px;background:#181a1f;color:var(--t)}.row{display:flex;gap:7px}.row button{flex:1;padding:9px;border-radius:9px;border:1px solid #4a4030;background:#1d1f24;color:var(--t)}.row .primary{background:linear-gradient(#f4c95d,#d6a63a);color:#17130a;font-weight:800}.log{font:10px monospace;white-space:pre-wrap;color:#b8bac0;background:#0b0c0f;border-radius:9px;padding:8px;margin-top:8px;max-height:180px;overflow:auto}.pill{font-size:9px;padding:3px 7px;border-radius:999px;border:1px solid #555;margin-left:5px}.ok{color:#79c98a;border-color:#79c98a55}.bad{color:#e66b73;border-color:#e66b7355}.unread{position:fixed;right:14px;bottom:88px;background:var(--g2);color:#17130a;border:0;border-radius:999px;padding:8px 12px;font-size:11px;font-weight:900;display:none;z-index:7}.unread.show{display:block}.empty{min-height:320px;display:grid;place-items:center;text-align:center;color:var(--m);padding:40px}.empty strong{display:block;color:var(--t);margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top"><button onclick="history.back()">‹</button><div class="title">GAME TABLE</div><button id="refresh">↻</button></header>
+<section class="status"><div><div id="phase" class="status-label">CONNECTING</div><div id="sub" class="status-sub">Waiting for authoritative Game Room state…</div></div><div id="timer" class="timer"></div></section>
+<main id="feed" class="feed"><div id="empty" class="empty"><div><strong>Game Room</strong>Connect this console to the real backend WebSocket to receive authoritative state and events.</div></div></main>
+<button id="unread" class="unread">New messages</button>
+<div class="composer-wrap"><form id="composer" class="composer"><input id="input" placeholder="Type a message..." autocomplete="off"><button class="send">➤</button></form></div>
+</div>
+
+<div id="panel" class="panel">
+<h3>Backend connection <span id="pill" class="pill bad">DISCONNECTED</span></h3>
+<div class="field"><label>WebSocket URL</label><input id="wsUrl" placeholder="wss://your-backend.example/ws"></div>
+<div class="field"><label>Table ID</label><input id="tableId" placeholder="table-1"></div>
+<div class="field"><label>Authenticated player ID</label><input id="playerId" placeholder="player-1"></div>
+<div class="row"><button id="connect" class="primary">Connect</button><button id="disconnect">Disconnect</button></div>
+<div id="log" class="log"></div>
+<div style="font-size:10px;color:#777a81;line-height:1.45;margin-top:8px">The client uses the canonical WebSocketGateway envelopes. Authentication must be performed by the deployed backend transport before it calls WebSocketGateway.connect().</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const phaseMap={WAITING_FOR_PLAYERS:"WAITING FOR PLAYERS",BANKER_BIDDING:"BANKER BIDDING",BANKER_OUTBIDDING:"BANKER OUTBIDDING",PLAYER_BETTING:"BETTING OPEN",RED_PACKET:"RED PACKET OPEN",SETTLEMENT:"SETTLEMENT",CONTINUE_BANKING:"CONTINUE BANKING"};
+const S={ws:null,seq:0,deadline:null,table:"",player:"",nearBottom:true};
+function log(x){$("log").textContent+=`[${new Date().toLocaleTimeString()}] ${x}\n`;$("log").scrollTop=$("log").scrollHeight}
+function money(c){return typeof c==="number"?(c/100).toFixed(2):String(c??"—")}
+function append(system,name,text,time=Date.now()){ $("empty")?.remove();const f=$("feed"),w=document.createElement("div");w.className="msg "+(system?"system":"");w.innerHTML=`<div class="avatar">${system?"G":"♙"}</div><div class="body"><div class="name"></div><div class="bubble"></div><div class="stamp"></div></div>`;w.querySelector(".name").textContent=name;w.querySelector(".bubble").textContent=text;w.querySelector(".stamp").textContent=new Date(time).toLocaleTimeString();f.appendChild(w);if(S.nearBottom)f.scrollTop=f.scrollHeight;else{$("unread").classList.add("show")}}
+$("feed").onscroll=()=>{S.nearBottom=$("feed").scrollHeight-$("feed").scrollTop-$("feed").clientHeight<36;if(S.nearBottom)$("unread").classList.remove("show")};
+$("unread").onclick=()=>{$("feed").scrollTop=$("feed").scrollHeight;$("unread").classList.remove("show")};
+function stateUpdate(s){S.seq=Number(s.eventSequence??s.sequence??S.seq);S.deadline=s.timerDeadlineMs??null;$("phase").textContent=phaseMap[s.phase]||String(s.phase||"GAME ROOM");$("sub").textContent=s.phase==="WAITING_FOR_PLAYERS"?`${Array.isArray(s.playerIds)?s.playerIds.length:0} player(s) in room`:`Round ${s.roundNumber??"—"} · Sequence ${S.seq}`}
+function send(command){if(S.ws?.readyState!==WebSocket.OPEN)return log("Not connected");S.ws.send(JSON.stringify({type:"COMMAND",command:{...command,playerId:S.player,idempotencyKey:crypto.randomUUID()}}))}
+function event(ev){S.seq=Math.max(S.seq,ev.sequence||0);const t=ev.occurredAtMs||Date.now();if(ev.type==="CHAT_MESSAGE_CREATED")return append(false,ev.playerId||"Player",ev.message||"",t);const m={BANKER_CONFIRMED:`Banker : ${ev.playerId}\nBanker pool : ${money(ev.amount)}`,BETTING_LOCKED:"BETTING CLOSED",RED_PACKET_OPENED:"COLLECTION START",RED_PACKET_CLOSED:"packet expired",SETTLEMENT_COMPLETED:"Collection ended\nTallying results - please wait for the scoreboard...",RESULTS_READY:"Results are ready.",CONTINUE_BANKING_OPENED:"Continue Banking",BANKER_STOPPED:`${ev.playerId} has stopped banking — table closed.\nStarting the next round...`,BANKER_FORCED_STOP:`${ev.playerId} has stopped banking — table closed.\nStarting the next round...`,BANKER_CONTINUED:`${ev.playerId} continued banking at ${money(ev.amount)}.`};if(m[ev.type])append(true,"GAME",m[ev.type],t)}
+function receive(m){log(JSON.stringify(m));if(m.type==="CONNECTED"){stateUpdate(m.state);S.seq=m.sequence??S.seq}if(m.type==="EVENTS")(m.events||[]).forEach(event);if(m.type==="COMMAND_RESULT"&&m.status==="rejected")append(true,"GAME",`Action rejected: ${m.reason||"UNKNOWN_REASON"}`);if(m.type==="ERROR")append(true,"GAME",m.message||m.code||"Message rejected")}
+function connect(){const url=$("wsUrl").value.trim();S.table=$("tableId").value.trim();S.player=$("playerId").value.trim();if(!url||!S.table||!S.player)return log("WebSocket URL, Table ID and Player ID are required");S.ws=new WebSocket(url);S.ws.onopen=()=>{ $("pill").textContent="CONNECTED";$("pill").className="pill ok";log("Socket open. Sending HELLO.");S.ws.send(JSON.stringify({type:"HELLO",tableId:S.table,lastSequence:S.seq}))};S.ws.onmessage=e=>{try{receive(JSON.parse(e.data))}catch(x){log("Invalid JSON")}};S.ws.onclose=e=>{$("pill").textContent="DISCONNECTED";$("pill").className="pill bad";log(`Socket closed (${e.code}) ${e.reason||""}`)};S.ws.onerror=()=>log("WebSocket transport error")}
+$("connect").onclick=connect;$("disconnect").onclick=()=>S.ws?.close();$("refresh").onclick=()=>S.ws?.readyState===WebSocket.OPEN?S.ws.send(JSON.stringify({type:"HELLO",tableId:S.table,lastSequence:S.seq})):connect();
+$("composer").onsubmit=e=>{e.preventDefault();const v=$("input").value.trim();if(v)send({type:"SEND_CHAT_MESSAGE",message:v});$("input").value=""};
+document.addEventListener("keydown",e=>{if(e.key==="`")$("panel").classList.toggle("open")});
+const q=new URLSearchParams(location.search);if(q.get("ws"))$("wsUrl").value=q.get("ws");if(q.get("table"))$("tableId").value=q.get("table");if(q.get("player"))$("playerId").value=q.get("player");
+setInterval(()=>{if(S.deadline){const n=Math.max(0,S.deadline-Date.now());$("timer").textContent=Math.ceil(n/1000)+"s";if(n<=0)S.deadline=null}else $("timer").textContent=""},250);
+</script>
+</body>
+</html>

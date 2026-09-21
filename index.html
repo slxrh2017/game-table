@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Telegram Game V1 — Game Room Test Console</title>
+<style>
+:root{--bg:#090a0c;--bar:#111316;--card:#17191e;--card2:#1d2026;--gold:#d6a63a;--gold2:#f4c95d;--crimson:#7f1118;--ivory:#f4f1e8;--muted:#a5a5aa;--line:#39342a}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ivory);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100dvh}
+.app{max-width:720px;min-height:100dvh;margin:auto;background:radial-gradient(circle at 50% -5%,#7f11182b,transparent 34%),#090a0c;display:flex;flex-direction:column}
+.top{height:60px;display:grid;grid-template-columns:56px 1fr 56px;align-items:center;background:#101216;border-bottom:1px solid #d6a63a35}.top button{border:0;background:none;color:var(--ivory);font-size:29px;height:48px}.title{text-align:center;font-weight:900;letter-spacing:.15em;font-size:13px}
+.status{margin:11px 12px 0;padding:11px 13px;border:1px solid #d6a63a68;border-radius:15px;background:linear-gradient(145deg,#1b1e23,#121419);display:flex;justify-content:space-between;align-items:center;gap:12px}.status-name{font-size:12px;font-weight:900;letter-spacing:.09em}.status-sub{font-size:10px;color:var(--muted);margin-top:4px}.timer{color:var(--gold2);font-size:17px;font-weight:900}
+.feed{flex:1;overflow:auto;padding:15px 12px 110px}.msg{display:flex;gap:9px;margin-bottom:13px}.avatar{width:31px;height:31px;min-width:31px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#25282e,#14161a);border:1px solid #393c43;color:#92959c;font-size:14px}.body{min-width:0;max-width:calc(100% - 40px)}.name{font-size:10px;color:#96989f;margin:0 0 4px 2px}.bubble{background:#181a1f;border:1px solid #2d3037;border-radius:13px;padding:9px 11px;line-height:1.42;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}.stamp{font-size:9px;color:#696c73;margin:4px 0 0 3px}
+.system .avatar{background:linear-gradient(145deg,#503b19,#241b0d);border-color:#d6a63a80;color:var(--gold2)}.system .name{color:var(--gold2);font-weight:900}.system .bubble{background:linear-gradient(145deg,#302719,#171612);border-color:#d6a63a78}
+.banner{display:flex;align-items:center;gap:10px;margin:5px 0 13px;padding:10px 12px;border-radius:15px;background:linear-gradient(135deg,#361017,#16171a);border:1px solid #d6a63a58}.bull{width:40px;height:40px;min-width:40px;border-radius:50%;display:grid;place-items:center;background:#19130c;border:1px solid #d6a63a78;padding:6px}.bull img{width:100%;height:100%}.bt{font-weight:950;font-size:12px;letter-spacing:.07em}.bs{font-size:10px;color:#b9b6ae;margin-top:2px}
+.composer-wrap{position:sticky;bottom:0;padding:9px 12px calc(9px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#090a0cf5 27%);z-index:4}.composer{display:flex;gap:8px;padding:7px;border:1px solid #443c2c;border-radius:17px;background:#15171b}.composer input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--ivory);padding:9px 11px;font-size:14px}.send{width:48px;border:0;border-radius:13px;background:linear-gradient(#f4c95d,#d6a63a);color:#17130a;font-weight:950}
+.dev{border-top:1px solid #292b30;background:linear-gradient(180deg,#14161a,#0f1013);padding:9px 12px}.dev summary{cursor:pointer;color:var(--gold2);font-size:11px;font-weight:900;letter-spacing:.06em}.devbox{margin-top:9px;padding:10px;border:1px solid #3b3428;border-radius:13px;background:#17191e}.devtitle{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;color:var(--gold2)}.devbull{width:24px;height:24px}.devgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.dev button{min-height:40px;border-radius:9px;border:1px solid #4b402b;background:#1b1d22;color:var(--ivory);font-size:10px}.dev button.primary{background:linear-gradient(#f4c95d,#d6a63a);color:#17130a;font-weight:900}.dev input{width:100%;margin-top:7px;padding:9px;border-radius:9px;border:1px solid #3b3e45;background:#111317;color:var(--ivory)}.conn{font-size:9px;color:#777b83;line-height:1.35;margin-top:7px}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><button type="button" id="back">‹</button><div class="title">GAME TABLE</div><button type="button" id="refresh">↻</button></header>
+<section class="status"><div><div class="status-name" id="phase">WAITING FOR PLAYERS</div><div class="status-sub" id="sub">Round 1 · Test console</div></div><div class="timer" id="timer"></div></section>
+<main class="feed" id="feed" aria-live="polite"></main>
+<div class="composer-wrap"><form class="composer" id="chat"><input id="message" placeholder="Type a message..." autocomplete="off" aria-label="Type a message"><button class="send" type="submit">➤</button></form></div>
+
+<details class="dev">
+<summary>REAL ENGINE TEST CONTROL</summary>
+<div class="devbox">
+<div class="devtitle"><img class="devbull" src="bull-logo.svg" alt=""><span>GAME ROOM TEST CONTROL</span></div>
+<div class="devgrid">
+<button class="primary" data-step="0">Start Bidding</button><button data-step="1">Outbidding</button><button data-step="2">Banker Confirmed</button>
+<button data-step="3">Betting Open</button><button data-step="4">Betting Closed</button><button data-step="5">Red Packet</button>
+<button data-step="6">Settlement</button><button data-step="7">Results Delay</button><button data-step="8">Results</button>
+<button data-step="9">Continue Banking</button><button data-step="10">Stop Banking</button><button data-step="reset">Reset</button>
+</div>
+<input id="ws" placeholder="Real Backend WebSocket: wss://...">
+<div class="conn" id="conn">Developer-only controls. The player-facing area above remains the actual Game Room UI. A real backend endpoint can be supplied later; the browser never becomes authoritative.</div>
+</div>
+</details>
+</div>
+<script>
+const $=id=>document.getElementById(id),feed=$("feed"),phase=$("phase"),sub=$("sub"),timer=$("timer");let ws=null;
+const E=[
+{p:"BANKER BIDDING",s:"Round 1 · Banker bidding",t:"10s",m:[["banner","START BIDDING","Bidding is opening"],["sys","GAME","Bidding starts\\nMinimum Banker bid : 10.00\\nMinimum increment : 1.00"]]},
+{p:"BANKER OUTBIDDING",s:"Round 1 · Banker outbidding",t:"10s",m:[["sys","GAME","Alex is leading the bid at 20.00. 10 seconds to close - any higher bids?"]]},
+{p:"BANKER CONFIRMED",s:"Round 1 · Banker confirmed",t:"",m:[["banner","BANKER CONFIRMED","Banker selection confirmed"],["sys","GAME","Banker : Alex\\nBanker pool : 20.00"]]},
+{p:"BETTING OPEN",s:"Round 1 · Player betting",t:"30s",m:[["banner","BETTING OPEN","Players can place or modify bets"],["sys","GAME","Bet time : 30 seconds\\nNormal range : 1.00 - 20.00\\nAA range : 1.00 - 20.00\\n\\nTo bet, just send the amount\\nTo bet with no multiplier, send AA(amount)\\nTo cancel, send 0"],["player","Jason","2.00"],["player","Mika","AA(1.00)"],["sys","GAME","10 seconds left to bet\\nPlace or modify your bet now"]]},
+{p:"BETTING OPEN",s:"Round 1 · Betting closed",t:"",m:[["banner","BETTING CLOSED","Betting period has ended"],["sys","GAME","Banker: Alex\\nBanker pool: 20.00\\nPacket count: 3\\nPacket amount: 6.00\\nTotal normal bets: 2.00\\nTotal AA bets: 1.00\\n\\nBets placed this round (2):\\nJason: 2.00\\nMika: 1.00\\n\\nFailed bets this round (0):"]]},
+{p:"RED PACKET OPEN",s:"Round 1 · Red Packet collection",t:"20s",m:[["banner","RED PACKET","Tap to collect and view live collection"],["banner","COLLECTION START","Collection is now open"],["player","Jason","Collected a packet"],["player","Mika","Collected a packet"]]},
+{p:"SETTLEMENT",s:"Round 1 · Settlement",t:"",m:[["sys","GAME","packet expired"],["banner","COLLECTION ENDED","Collection has ended"],["sys","GAME","Collection ended\\nEnded at: 21 Sep 2026 23:23\\n\\nTallying results - please wait for the scoreboard..."]]},
+{p:"RESULTS DELAY",s:"Round 1 · Results delay",t:"3s",m:[]},
+{p:"RESULTS",s:"Round 1 · Results released",t:"",m:[["sys","GAME","Round #1 - Results\\n\\nBanker : Alex\\nPacket : 2.00\\nHand : 8\\nBanker pool : 20.00\\nBanker profit : 1.90\\nBanker total balance : 101.90\\n\\nJason :\\nPacket • Hand\\n2.00 • 8\\nBet amount → 1.90\\nUpdated balance : 49.90"]]},
+{p:"CONTINUE BANKING",s:"Round 1 · Continue banking",t:"45s",m:[["sys","GAME","Continue Banking\\n\\nStake range: 20.00 - 21.90\\n\\nReply within 45 seconds:\\n1 = continue at maximum\\n0 = stop\\nor enter an amount within the range."]]},
+{p:"BANKER BIDDING",s:"Round 2 · New Banker bidding",t:"10s",m:[["sys","GAME","Alex has stopped banking — table closed.\\nStarting the next round..."],["banner","START BIDDING","Bidding is opening"],["sys","GAME","Bidding starts\\nMinimum Banker bid : 10.00\\nMinimum increment : 1.00"]]}
+];
+function add(kind,name,text){const d=document.createElement("div");d.className="msg "+(kind==="sys"?"system":"");if(kind==="banner"){d.className="banner";d.innerHTML='<div class="bull"><img src="bull-logo.svg" alt=""></div><div><div class="bt"></div><div class="bs"></div></div>';d.querySelector(".bt").textContent=name;d.querySelector(".bs").textContent=text}else{d.innerHTML='<div class="avatar"></div><div class="body"><div class="name"></div><div class="bubble"></div><div class="stamp"></div></div>';d.querySelector(".avatar").textContent=kind==="sys"?"G":"♙";d.querySelector(".name").textContent=name;d.querySelector(".bubble").textContent=text;d.querySelector(".stamp").textContent=new Date().toLocaleTimeString()}feed.appendChild(d);feed.scrollTop=feed.scrollHeight}
+function render(n){if(n==="reset"){feed.innerHTML="";phase.textContent="WAITING FOR PLAYERS";sub.textContent="Round 1 · Test console";timer.textContent="";return}const e=E[n];phase.textContent=e.p;sub.textContent=e.s;timer.textContent=e.t||"";e.m.forEach(x=>add(x[0],x[1],x[2]))}
+document.querySelectorAll("[data-step]").forEach(b=>b.addEventListener("click",()=>render(b.dataset.step==="reset"?"reset":Number(b.dataset.step))));
+$("chat").addEventListener("submit",e=>{e.preventDefault();const v=$("message").value.trim();if(!v)return;add("player","You",v);$("message").value="";if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:"COMMAND",command:{type:"SEND_CHAT_MESSAGE",message:v,idempotencyKey:crypto.randomUUID()}}))});
+$("refresh").addEventListener("click",()=>render("reset"));$("back").addEventListener("click",()=>{});
+$("ws").addEventListener("change",()=>{const url=$("ws").value.trim();if(!url)return;try{ws=new WebSocket(url);ws.onopen=()=>$("conn").textContent="Connected to supplied WebSocket. Waiting for authoritative events.";ws.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.type==="EVENTS"&&Array.isArray(m.events))m.events.forEach(ev=>add("sys","GAME",ev.type));}catch{}};ws.onclose=()=>$("conn").textContent="WebSocket disconnected.";ws.onerror=()=>$("conn").textContent="WebSocket connection error."}catch{$("conn").textContent="Invalid WebSocket URL."}});
+</script>
+</body>
+</html>
